@@ -2,4 +2,5 @@
  The following are the different modules needed:
  pip3 install ________
  -typing
+ -pushbullet.py==0.9.1
  
