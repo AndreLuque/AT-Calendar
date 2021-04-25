@@ -3,4 +3,5 @@
  pip3 install ________
  -typing
  -pushbullet.py==0.9.1
+ -PyQt5
  
