@@ -24,4 +24,4 @@ def send_notification_via_pushbullet(title, body):
         print(resp.text)
 
 
-send_notification_via_pushbullet('LOL', 'Hola como estas?')
+send_notification_via_pushbullet('ALERT','Como me aburre discreta macho')

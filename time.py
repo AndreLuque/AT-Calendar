@@ -29,7 +29,10 @@ class Time():
 			if self.__minute < 10:
 				return f'{self.__hour}:0{self.__minute}'
 			else: 
-				return f'{self.__hour}:{self.__minute}'			
+				return f'{self.__hour}:{self.__minute}'		
+
+	def __eq__(self, other):
+		return self.__minute == other.minute and self.__hour == other.hour
 
 	def __lt__(self, other):
 		return (self.__hour < other.hour) or (self.__hour == other.hour and self.__minute < other.minute)
@@ -46,6 +49,7 @@ print(hora4) #debe ser '13:02'
 print(hora5) #debe ser '06:00'
 print(hora1 < hora2) #debe ser True
 print(hora1 < hora3) #debe ser True
+print(hora2 == hora3) #debe ser False
 
 #debe dar error y saltar la excepcion
 print()

@@ -18,6 +18,9 @@ class Message():
 	def __str__(self):
 		return str(self.__title).upper() + '\n' + str(self.__body)
 
+	def __eq__(self, other):
+		return self.__title == other.__title	
+
 #lo probamos con un código de ejemplo
 mensaje1: Message = Message('Examen', 'Recordad que tienes examen de Cálculo II, ponte a estudiar')
 
