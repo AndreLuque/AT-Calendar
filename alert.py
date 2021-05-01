@@ -2,7 +2,7 @@ from typing import List, Optional, NoReturn, TypeVar
 from abc import ABC, abstractmethod
 from message import Message
 from date import Date
-from time import Time
+from time1 import Time
 from alertType import AlertType
 
 T = TypeVar('T')
@@ -18,6 +18,10 @@ class Alert(ABC):
 	@property
 	def message(self) -> Message:
 		return self.__message
+
+	@message.setter
+	def message(self, value: Message) -> NoReturn:
+		self.__message = value	
 
 	@property
 	def date(self) -> Date:

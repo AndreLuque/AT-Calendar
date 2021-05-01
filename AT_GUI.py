@@ -1,8 +1,8 @@
 #código que creara la ventana de la applicacion
 from alert import Alert
 from message import Message
-from date import Date
-from time import Time
+from date import Date, correctDate
+from time1 import Time
 from alertType import AlertType
 from typing import List, NoReturn, TypeVar
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QPushButton, QMessageBox, QGridLayout, QMainWindow, QStatusBar, QToolBar, QAction, QLineEdit, QComboBox, QHBoxLayout, QVBoxLayout
@@ -83,17 +83,19 @@ class MainWindow(QMainWindow):
     	self.__month = QComboBox()
     	listMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
     	self.__add_elements_comboBox(self.__month, listMonths)
+    	self.__month.setMaximumWidth(500)
     	sublayout1.addWidget(self.__month)
 
-    	#ponemos un hueco para que el usuario introduzca el dia
-    	self.__day = QLineEdit(placeholderText = 'Day') #placeholder es un texto que indica lo que hay que poner en la caja pero al introducir el valor se borra
-    	self.__day.setMaxLength(2) #limitamos el numero de caracteres que se pueden escribir en la casilla
-    	sublayout1.addWidget(self.__day)
-
     	#ponemos un hueco para que el usuario introduzca el año
-    	self.__year = QLineEdit(placeholderText = 'Year')
-    	self.__year.setMaxLength(4)
+    	self.__year = QComboBox()
+    	listYears = ['2021', '2022']
+    	self.__add_elements_comboBox(self.__year, listYears)
     	sublayout1.addWidget(self.__year)
+
+    	#ponemos un hueco para que el usuario introduzca el dia
+    	self.__day = QLineEdit(placeholderText = 'Day')
+    	self.__day.setMaxLength(2)
+    	sublayout1.addWidget(self.__day)
 
     	layout.addLayout(sublayout1)
 
@@ -106,14 +108,14 @@ class MainWindow(QMainWindow):
     	sublayout2.addWidget(time)
 
     	#ponemos un hueco para que el usuario indique una hora
-    	self.__hour = QLineEdit(placeholderText = 'Hour (0-23)')
+    	self.__hour = QLineEdit(placeholderText = 'Hour')
     	self.__hour.setMaxLength(2)
     	sublayout2.addWidget(self.__hour)
 
     	sublayout2.addWidget(QLabel(':'))
 
     	#ponemos un hueco para que el usuario indique el minute
-    	self.__minute = QLineEdit(placeholderText = 'Minute (0-59)')
+    	self.__minute = QLineEdit(placeholderText = 'Minute')
     	self.__minute.setMaxLength(2)
     	sublayout2.addWidget(self.__minute)
 
@@ -140,12 +142,13 @@ class MainWindow(QMainWindow):
     	#ponemos el hueco para que nos escriba el titulo de su alerta
     	self.__title = QLineEdit(placeholderText = 'Alert Description')
     	self.__title.setMaximumWidth(500)
+    	self.__title.setMaxLength(20)
     	layout.addWidget(self.__title)
 
     	#ponemos un hueco para que escriba un mensaje mas en detalle
-    	self.__message = QLineEdit(placeholderText = 'Message (Optional)')
-    	self.__message.setMaximumHeight(300)
-    	layout.addWidget(self.__message)
+    	self.__body = QLineEdit(placeholderText = 'Message (Optional)')
+    	self.__body.setMaximumHeight(300)
+    	layout.addWidget(self.__body)
 
     	##########################################################################################################
 
@@ -169,36 +172,82 @@ class MainWindow(QMainWindow):
 
     def __addAlert(self):
     	#obtenemos los datos que estan en las casillas
-    	monthText = self.__month.currentText()
+    	monthTextInt: int = self.__convertMonthText() #cambiamos el mes a un numero
     	dayText = self.__day.text()
-    	yearText = self.__year.text()
+    	yearText = self.__year.currentText()
     	hourText = self.__hour.text()
     	minuteText = self.__minute.text()
     	alertTypeText = self.__alertType.currentText()
     	titleText = self.__title.text()
-    	messageText = self.__message.text()
+    	bodyText = self.__body.text()
 
     	#vemos si todas las casillas que son obligatorias estan rellenadas
     	fill = True
     	if dayText == '':
     		self.__day.setStyleSheet('border : 1px solid red')
+    		self.__day.setPlaceholderText('!!MISSING DAY!!')
     		fill = False
-    	if yearText == '':
-    		self.__year.setStyleSheet('border : 1px solid red')
-    		fill = False
+    	else:
+    		self.__day.setStyleSheet('')	
     	if hourText == '':
     		self.__hour.setStyleSheet('border : 1px solid red')
+    		self.__hour.setPlaceholderText('!!MISSING HOUR!!')
     		fill = False
+    	else:
+    		self.__hour.setStyleSheet('')		
     	if minuteText == '':
     		self.__minute.setStyleSheet('border : 1px solid red')
+    		self.__minute.setPlaceholderText('!!MISSING MINUTE!!')
     		fill = False
+    	else:
+    		self.__minute.setStyleSheet('')		
     	if titleText == '':
     		self.__title.setStyleSheet('border : 1px solid red')
+    		self.__title.setPlaceholderText('!!MISSING DESCRIPTION!!')
     		fill = False				
+    	else:
+    		self.__title.setStyleSheet('')		
     	
-    	#if fill:
+    	#estan las casillas rellenadas pasamos al siguente paso
+    	if fill:
+    		correct = True
     		#ahora debemos comprobar que los datos insertados son correctos
     		#en caso afirmativo reiniciaremos las casillas quitando el bordado rojo y poniendo un mensaje de alerta añadida
+    		try:
+    			date = Date(int(dayText), int(monthTextInt), int(yearText))
+    			self.__day.setStyleSheet('')
+    		except:
+    			correct = False
+    			self.__day.setStyleSheet('border : 1px solid red')
+    			self.__day.setText('')
+    			self.__day.setPlaceholderText('!!INCORRECT DAY!!')
+
+    		time = Time(0, 0)
+    		try:
+    			time.hourSetter(int(hourText))
+    			self.__hour.setStyleSheet('')
+    		except:
+    			correct = False
+    			self.__hour.setStyleSheet('border : 1px solid red')
+    			self.__hour.setText('')
+    			self.__hour.setPlaceholderText('!!INCORRECT HOUR!!')
+    		try:
+    			time.minuteSetter(int(minuteText))
+    			self.__minute.setStyleSheet('')
+    		except:
+    			correct = False
+    			self.__minute.setStyleSheet('border : 1px solid red')
+    			self.__minute.setText('')
+    			self.__minute.setPlaceholderText('!!INCORRECT MINUTE!!')
+
+    		alertType = AlertType(alertTypeText)
+    		message = Message(titleText, bodyText)
+
+    		#si todas las casillas estan BIEN rellanadas, pasamos al siguente paso
+    		if correct:
+    			#creamos la alerta y lo añadimos a nuestra lista de alertas que almacenaremos, ademas desplegamos una pantalla en verde copnfirmado la alerta. reiniciamos las casillas
+
+    				
     		
     								
 
@@ -212,7 +261,32 @@ class MainWindow(QMainWindow):
 
     def __add_elements_comboBox(self, comboBox: QComboBox, listElements: List[T]) -> NoReturn:
     	for element in listElements:
-    		comboBox.addItem(element)
+    		comboBox.addItem(str(element))
+
+    def __convertMonthText(self, monthStr: str = '', monthInt: int = 0) -> int:
+    	listMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+    	monthStr = self.__month.currentText()
+    	for i in range(len(listMonths)):
+    		if monthStr == listMonths[i]:
+    			monthInt = i + 1
+    	return monthInt				
+
+    def __correctDays(self, year: str, month: str) -> List[int]:
+    	year = int(year)
+    	if (year % 4 == 0) and ((year % 100 != 0) or (year % 100 == 0 and year % 400 == 0)):
+    		if month == 'February':
+    			return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+    		elif month == 'January' or month == 'March' or month == 'May' or month == 'July' or month == 'August' or month == 'October' or month == 'December':
+    			return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+    		elif month == 'April' or month == 'June' or month == 'September' or month == 'November':
+    			return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+    	else:
+    		if month == 'February':
+    			return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]
+    		elif month == 'January' or month == 'March' or month == 'April' or month == 'July' or month == 'August' or month == 'October' or month == 'December':
+    			return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+    		elif month == 'April' or month == 'June' or month == 'September' or month == 'November':	
+    			return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]		
 
 def main ():
 

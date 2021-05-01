@@ -19,9 +19,10 @@ class Message():
 		return str(self.__title).upper() + '\n' + str(self.__body)
 
 	def __eq__(self, other):
-		return self.__title == other.__title	
+		return self.__title == other.__title
 
-#lo probamos con un código de ejemplo
-mensaje1: Message = Message('Examen', 'Recordad que tienes examen de Cálculo II, ponte a estudiar')
+def test():			
+	#lo probamos con un código de ejemplo
+	mensaje1: Message = Message('Examen', 'Recordad que tienes examen de Cálculo II, ponte a estudiar')
 
-print(mensaje1)	#debeeria imprimir el titulo del mensaje en mayusculas y luego el cuerpo del mensaje					
+	print(mensaje1)	#debeeria imprimir el titulo del mensaje en mayusculas y luego el cuerpo del mensaje					

@@ -15,9 +15,21 @@ class Time():
 	def hour(self):
 		return self.__hour
 
+	def hourSetter(self, value: int):
+		#comprobamos primero que sea corrrecto
+		if value < 0 or value >= 24:
+			raise ValueError('Hours in the day must be 0-23')
+		self.__hour = value	
+
 	@property
 	def minute(self):
 		return self.__minute
+
+	def minuteSetter(self, value: int):
+		#comprobamos primero que sea correcto
+		if value < 0 or value >= 60:
+			raise ValueError('Minutes in an hour must be 0-59')
+		self.__minute = value	
 
 	def __str__(self):
 		if self.__hour < 10:
@@ -37,27 +49,29 @@ class Time():
 	def __lt__(self, other):
 		return (self.__hour < other.hour) or (self.__hour == other.hour and self.__minute < other.minute)
 
-#lo probamos con un código de ejemplo
-hora1: Time = Time(3, 46)
-hora2: Time = Time(13, 47)
-hora3: Time = Time(3, 47)
-hora4: Time = Time(13, 2)
-hora5: Time = Time(6, 0)
 
-print(hora1) #debe ser '03:46'
-print(hora4) #debe ser '13:02'
-print(hora5) #debe ser '06:00'
-print(hora1 < hora2) #debe ser True
-print(hora1 < hora3) #debe ser True
-print(hora2 == hora3) #debe ser False
+def test():
+	#lo probamos con un código de ejemplo
+	hora1: Time = Time(3, 46)
+	hora2: Time = Time(13, 47)
+	hora3: Time = Time(3, 47)
+	hora4: Time = Time(13, 2)
+	hora5: Time = Time(6, 0)
 
-#debe dar error y saltar la excepcion
-print()
-try:
-	hora6: Time = Time(123, 6)
-except:	
-	print('ERROR. Hours in the day must be 0-23')
-try:
-	hora7: Time = Time(12, -4)
-except:
-	print('ERROR. Minutes in an hour must be 0-59')		
+	print(hora1) #debe ser '03:46'
+	print(hora4) #debe ser '13:02'
+	print(hora5) #debe ser '06:00'
+	print(hora1 < hora2) #debe ser True
+	print(hora1 < hora3) #debe ser True
+	print(hora2 == hora3) #debe ser False
+
+	#debe dar error y saltar la excepcion
+	print()
+	try:
+		hora6: Time = Time(123, 6)
+	except:	
+		print('ERROR. Hours in the day must be 0-23')
+	try:
+		hora7: Time = Time(12, -4)
+	except:
+		print('ERROR. Minutes in an hour must be 0-59')		

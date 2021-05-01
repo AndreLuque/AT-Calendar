@@ -74,21 +74,23 @@ class Date():
 	def __lt__(self, other):
 		return (self.__year < other.year) or (self.__year == other.year and self.__month < other.month) or (self.__year == other.year and self.__month == other.month and self.__day < other.day)									
 
-#código de prueba
-try: 
-	fecha1: Date(29, 2, 2017)
-except:
-	print('ERROR')
-#debe dar error
 
-fecha1: Date = Date(29, 2, 2020)
-fecha2: Date =  Date(29, 3, 2017)
-fecha3: Date = Date(29, 3, 2020)
-fecha4: Date = Date(2, 2, 2017)
-fecha5: Date = Date(2, 10, 2017)
+def test():
+	#código de prueba
+	try: 
+		fecha1: Date(29, 2, 2017)
+	except:
+		print('ERROR')
+	#debe dar error
 
-print(fecha1 > fecha2) #debe imprimir True
-print(fecha1 < fecha3) #debe imprimir True
-print(fecha3) #debe ser 29/03/2020 
-print(fecha4) #debe ser 02/02/2017
-print(fecha5) #debe ser 02/10/2017
+	fecha1: Date = Date(29, 2, 2020)
+	fecha2: Date =  Date(29, 3, 2017)
+	fecha3: Date = Date(29, 3, 2020)
+	fecha4: Date = Date(2, 2, 2017)
+	fecha5: Date = Date(2, 10, 2017)
+
+	print(fecha1 > fecha2) #debe imprimir True
+	print(fecha1 < fecha3) #debe imprimir True
+	print(fecha3) #debe ser 29/03/2020 
+	print(fecha4) #debe ser 02/02/2017
+	print(fecha5) #debe ser 02/10/2017
