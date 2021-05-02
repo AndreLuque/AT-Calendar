@@ -7,6 +7,7 @@ from alertType import AlertType
 from typing import List, NoReturn, TypeVar
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QPushButton, QMessageBox, QGridLayout, QMainWindow, QStatusBar, QToolBar, QAction, QLineEdit, QComboBox, QHBoxLayout, QVBoxLayout
 from PyQt5.QtGui import QFont, QPixmap
+from PyQt5 import QtCore
 
 T = TypeVar('T')
 
@@ -25,7 +26,7 @@ class MainWindow(QMainWindow):
        	self.__change_to_home_screen()
 
        	#inicializamos la lista de alertas
-       	listAlerts: List[Alert] = []
+       	self.__listAlerts: List[Alert] = []
 
     def __createMenu(self) -> NoReturn:
         self.menu = self.menuBar().addMenu("&Menu")
@@ -38,8 +39,18 @@ class MainWindow(QMainWindow):
         #añadimos boton para ir a la pantalla inicial 
         tools.addAction('Home', lambda: self.__change_to_home_screen())
 
+        #añadimos boton para ver las tareas del dia
+        tools.addAction('Today´s Schedule', lambda: self.__change_to_todays_schedule_screen())
+
+        #añadimos el boton para ver el calendario de alertas
+        tools.addAction('Alert Calendar', lambda: self.__change_to_alert_calendar_screen())
+
         #añadimos boton para ir a la pantalla de añadir alerta
         tools.addAction('Add Alert', lambda: self.__change_to_alert_screen())
+
+        #añadimos boton para planear su siguente dia
+        tools.addAction('Plan for Tommorow', lambda: self.__change_to_plan_tommorow_screen())
+
 
         #añadimos boton para salirse de la app
         tools.addAction('Exit', self.close)
@@ -130,9 +141,12 @@ class MainWindow(QMainWindow):
 
     	#ponemos una caja desplegable para que elija un tipo de alerta
     	self.__alertType = QComboBox()
-    	listAlertTypes = []
+    	listAlertTypes = ['Exam', 'Friends&Family Event', 'Meeting', 'Other']
     	self.__add_elements_comboBox(self.__alertType, listAlertTypes)
     	sublayout3.addWidget(self.__alertType)
+
+    	self.__alertType_other = QLineEdit(placeholderText = 'Specify Other (Optional)')
+    	sublayout3.addWidget(self.__alertType_other)
 
 
     	layout.addLayout(sublayout3)
@@ -245,19 +259,34 @@ class MainWindow(QMainWindow):
 
     		#si todas las casillas estan BIEN rellanadas, pasamos al siguente paso
     		if correct:
-    			#creamos la alerta y lo añadimos a nuestra lista de alertas que almacenaremos, ademas desplegamos una pantalla en verde copnfirmado la alerta. reiniciamos las casillas
+    			#creamos la alerta y lo añadimos a nuestra lista de alertas que almacenaremos
+    			alert: Alert = Alert(message, date, time, alertType)
+    			self.__listAlerts += [alert]
 
-    				
-    		
-    								
+    			#desplegamos una pantalla en verde 
+    			self.__change_to_alert_added_screen()
 
+    def __change_to_alert_added_screen(self) -> NoReturn:
+    	self.statusBar().showMessage('Current Status: Alert Added')
+    	self.statusBar().setStyleSheet('background-color : lightgray')	
 
+    	greenscreen = QLabel()
+    	greenscreen.setAlignment(QtCore.Qt.AlignCenter)
+    	greenscreen.setStyleSheet('background-color : green; border : 50px solid lime; color : lightgray')
+    	greenscreen.setText('ALERT ADDED!')
+    	greenscreen.setFont(QFont('Garamond', 60, QFont.Bold))
 
+    	#desplegamos la pantalla
+    	self.setCentralWidget(greenscreen)
 
+    def __change_to_plan_tommorow_screen(self) -> NoReturn:
+    	print(self.__listAlerts)
 
+    def __change_to_todays_schedule_screen(self) -> NoReturn:
+    	print()	
 
-
-
+    def __change_to_alert_calendar_screen(self) -> NoReturn:
+    	print()	
 
     def __add_elements_comboBox(self, comboBox: QComboBox, listElements: List[T]) -> NoReturn:
     	for element in listElements:
