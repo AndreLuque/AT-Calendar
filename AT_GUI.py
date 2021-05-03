@@ -288,7 +288,7 @@ class MainWindow(QMainWindow):
 		self.statusBar().showMessage('Current Status: Planning Tommorow´s Day')
 		self.setWindowTitle('Plan for Tommorow')
 		#cambiamos el color de la barra a rosa
-		self.statusBar().setStyleSheet('background-color : yellow')
+		self.statusBar().setStyleSheet('background-color : gold')
 
 		#diferenciamos entre cuando simplemente querenos actualizar la pantalla o cuando se inicia desde otra
 		if not update:
@@ -319,6 +319,12 @@ class MainWindow(QMainWindow):
 			layout.addWidget(self.__listMinutes[i], i + 1, 2)
 			layout.addWidget(self.__listTaskDescription[i], i + 1, 3)
 
+		deleteTaskButton: QPushButton = QPushButton('Delete Task')
+		deleteTaskButton.setStyleSheet('background-color : red')
+		layout.addWidget(deleteTaskButton, len(self.__listHours) + 1, 0)
+		#si presiona el boton borramos la ultima casilla puesta
+		deleteTaskButton.clicked.connect(lambda: self.__deleteTask())
+
 		addTaskButton: QPushButton = QPushButton('Add Task')
 		layout.addWidget(addTaskButton, len(self.__listHours) + 1, 2)
 		#si presiona el boton añadimos una nueva casilla para rellenar otra
@@ -337,7 +343,8 @@ class MainWindow(QMainWindow):
 		self.setCentralWidget(centralWidget)
 
 
-	def __addTask(self):
+	def __addTask(self) -> NoReturn:
+		#recorremos la lista y vemos cual es el primer hueco donde podemos poner una casillas mas 
 		exit: bool = False
 		i: int = 0
 		while i < len(self.__listHours) and not exit:
@@ -350,10 +357,28 @@ class MainWindow(QMainWindow):
 			self.__listMinutes[i] = QLineEdit(placeholderText = 'Minute')
 			self.__listTaskDescription[i] = QLineEdit(placeholderText = 'Description')			
 
-		#actualizamos la pantalla
-		self.__change_to_plan_tommorow_screen(True)
+			#actualizamos la pantalla
+			self.__change_to_plan_tommorow_screen(True)
 
-	def __saveTasks(self):	
+	def __deleteTask(self) -> NoReturn:	
+		#recorremos la lista buscando la ultima casilla y lo borramos
+		exit: bool = False
+		i: int = 0
+		while i < len(self.__listHours) and not exit:
+			if type(self.__listHours[i]) == QWidget:
+				exit = True
+			else:
+				i += 1
+		if i != 1:
+			self.__listHours[i - 1] = QWidget()
+			self.__listMinutes[i - 1] = QWidget()
+			self.__listTaskDescription[i - 1] = QWidget()			
+
+			#actualizamos la pantalla
+			self.__change_to_plan_tommorow_screen(True)
+
+
+	def __saveTasks(self) -> NoReturn:	
 		#recorrer las listas que guardan la info de las tareas y mirar que las casillas esten rellenadas y comprobar a la vez que esten bien rellenadas
 		#sino poner el bordillo rojo y cambia el placeholder. Si esta todo correcto almacenar la informacion como clases de alertas y dejarlo en una lista siguenet dia
 		fill: bool = True
@@ -418,7 +443,18 @@ class MainWindow(QMainWindow):
 			self.__change_to_saved_tommorows_tasks_screen()
 
 	def __change_to_saved_tommorows_tasks_screen(self) -> NoReturn:
-		print()
+		#cambiamos la barra de estado
+		self.statusBar().showMessage('Current Status: Alert Added')
+		self.statusBar().setStyleSheet('background-color : lightgray')	
+
+		purplescreen = QLabel()
+		purplescreen.setAlignment(QtCore.Qt.AlignCenter)
+		purplescreen.setStyleSheet('background-color : darkviolet; border : 50px solid mediumpurple; color : lightgray')
+		purplescreen.setText('TOMMOROW´S' + '\n' + 'TASKS SAVED!')
+		purplescreen.setFont(QFont('Garamond', 60, QFont.Bold))
+
+		#desplegamos la pantalla
+		self.setCentralWidget(purplescreen)
 
 	def __change_to_todays_schedule_screen(self) -> NoReturn:
 		print()	
