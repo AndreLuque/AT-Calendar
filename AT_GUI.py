@@ -49,7 +49,7 @@ class MainWindow(QMainWindow):
         tools.addAction('Add Alert', lambda: self.__change_to_alert_screen())
 
         #añadimos boton para planear su siguente dia
-        tools.addAction('Plan for Tommorow', lambda: self.__change_to_plan_tommorow_screen())
+        tools.addAction('Plan for Tommorow', lambda: self.__change_to_plan_tommorow_screen(False))
 
 
         #añadimos boton para salirse de la app
@@ -279,9 +279,80 @@ class MainWindow(QMainWindow):
     	#desplegamos la pantalla
     	self.setCentralWidget(greenscreen)
 
-    def __change_to_plan_tommorow_screen(self) -> NoReturn:
-    	print(self.__listAlerts)
+    def __change_to_plan_tommorow_screen(self, update: bool) -> NoReturn:
+    	#cambiamos el estado del programa, ahora estamos en la ventana de añadir alerta
+    	self.statusBar().showMessage('Current Status: Planning Tommorow´s Day')
+    	self.setWindowTitle('Plan for Tommorow')
+    	#cambiamos el color de la barra a rosa
+    	self.statusBar().setStyleSheet('background-color : yellow')
 
+    	#diferenciamos entre cuando simplemente querenos actualizar la pantalla o cuando se inicia desde otra
+    	if not update:
+    		#creamos listas donde almacenaremos la informacion de nuestras tareas
+       		#tendremos que crear widgets vacios para que las casillas empiecen arriba
+       		self.__listHours: List[QLineEdit] = [QLineEdit(placeholderText = '9'), QWidget(),  QWidget(),  QWidget(),  QWidget(), QWidget(),  QWidget(),  QWidget(),  QWidget(), QWidget(), QWidget(),  QWidget(),  QWidget(),  QWidget(), QWidget()]
+       		self.__listMinutes: List[QLineEdit] = [QLineEdit(placeholderText = '30'),  QWidget(),  QWidget(),  QWidget(),  QWidget(), QWidget(),  QWidget(),  QWidget(),  QWidget(), QWidget(), QWidget(),  QWidget(),  QWidget(),  QWidget(), QWidget()]
+       		self.__listTaskDescription: List[QLineEdit] = [QLineEdit(placeholderText = 'Wakeup'),  QWidget(),  QWidget(),  QWidget(),  QWidget(), QWidget(),  QWidget(),  QWidget(),  QWidget(), QWidget(), QWidget(),  QWidget(),  QWidget(),  QWidget(), QWidget()]
+   	
+    	layout = QGridLayout()
+
+		#ponemos el titulo de las dos casillas que tendran que rellenar por cada actividad
+    	layout.addWidget(QLabel('Time'), 0, 0)
+    	layout.addWidget(QLabel('Task Description'), 0, 3)
+
+    	for i in range(len(self.__listHours)):
+    		#solo podremos usar ese atrubuto si es un QLineEdit
+    		if type(self.__listHours[i]) == QLineEdit:
+    			self.__listHours[i].setMaxLength(2)
+    			self.__listMinutes[i].setMaxLength(2)
+
+    		layout.addWidget(self.__listHours[i], i + 1, 0)
+
+    		#solo ponemos ':' si hay horarios, es decir, si hay casillas
+    		if type(self.__listHours[i]) == QLineEdit:
+    			layout.addWidget(QLabel(':'), i + 1, 1)
+    		
+    		layout.addWidget(self.__listMinutes[i], i + 1, 2)
+    		layout.addWidget(self.__listTaskDescription[i], i + 1, 3)
+
+    	addTaskButton: QPushButton = QPushButton('Add Task')
+    	layout.addWidget(addTaskButton, len(self.__listHours) + 1, 2)
+    	#si presiona el boton añadimos una nueva casilla para rellenar otra
+    	addTaskButton.clicked.connect(lambda: self.__addTask())
+
+    	saveTasksButton: QPushButton = QPushButton('Save Tasks')
+    	saveTasksButton.setStyleSheet('background-color : darkturquoise')
+    	layout.addWidget(saveTasksButton, len(self.__listHours) + 1, 3)
+    	#si presiona el boton se guardan las tareas para el siguente dia 
+    	saveTasksButton.clicked.connect(lambda: self.__saveTasks())
+
+
+    	#como el layout del mainwindow esta predefinido por pyqt, creamos nuestro propio layout y lo ponemos dentro del preestablecido
+    	centralWidget = QWidget()
+    	centralWidget.setLayout(layout)
+    	self.setCentralWidget(centralWidget)
+
+
+    def __addTask(self):
+    	exit: bool = False
+    	i: int = 0
+    	while i < len(self.__listHours) and not exit:
+    		if type(self.__listHours[i]) == QWidget:
+    			exit = True
+    		else:
+    			i += 1
+    	if i < len(self.__listHours):
+    		self.__listHours[i] = QLineEdit(placeholderText = 'Hour')
+    		self.__listMinutes[i] = QLineEdit(placeholderText = 'Minute')
+    		self.__listTaskDescription[i] = QLineEdit(placeholderText = 'Description')			
+
+    	#actualizamos la pantalla
+    	self.__change_to_plan_tommorow_screen(True)
+
+    def __saveTasks(self):	
+    	print()
+    	#recorrer las listas que guardan la info de las tareas y mirar que las casillas esten rellenadas y comprobar a la vez que esten bien rellenadas
+    	#sino poner el bordillo rojo y cambia el placeholder. Si esta todo correcto almacenar la informacion como clases de alertas y dejarlo en una lista siguenet dia
     def __change_to_todays_schedule_screen(self) -> NoReturn:
     	print()	
 
