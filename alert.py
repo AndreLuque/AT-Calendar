@@ -37,7 +37,7 @@ class Alert(ABC):
 
 	#para poder cambiarlo a string definimos el metodo magico __str__. Tendremos que definir str para los otros parametros tambien ya que tampoco son de tipo str
 	def __str__(self):
-		return 'ALERT' + '\n' + str(self.__alert_type) + '\n' + str(self.__date) + '\n' + str(self.__time) + '\n' + str(self.__message)
+		return 'ALERT: ' + str(self.__alert_type) + '\n' + str(self.__date) + '\n' + str(self.__time) + '\n' + str(self.__message)
 
 	#para poder ver si hay una alerta redundante debebmos poder ver si dos son iguales, tenemos que definir el metodo magico __eq__
 	#tendremos que definir este mismo metodo magico en cada una de las clases
@@ -47,3 +47,5 @@ class Alert(ABC):
 	#para poder ordenar una lista de Alerts debemos tener un criterio para ordenarlo, usamos el metodo __lt__. utlizamos como referencia date y time por lo que definiremos __lt__ en esas clases tambien
 	def __lt__(self, other):
 		return self.date < other.date and self.time < other.time 
+
+
