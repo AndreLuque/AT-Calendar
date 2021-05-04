@@ -46,6 +46,6 @@ class Alert(ABC):
 
 	#para poder ordenar una lista de Alerts debemos tener un criterio para ordenarlo, usamos el metodo __lt__. utlizamos como referencia date y time por lo que definiremos __lt__ en esas clases tambien
 	def __lt__(self, other):
-		return self.date < other.date and self.time < other.time 
+		return self.date < other.date or (self.date == other.date and self.time < other.time) 
 
 

@@ -5,7 +5,7 @@ from date import Date, correctDate
 from time1 import Time
 from alertType import AlertType
 from typing import List, NoReturn, TypeVar
-from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QPushButton, QMessageBox, QGridLayout, QMainWindow, QStatusBar, QToolBar, QAction, QLineEdit, QComboBox, QHBoxLayout, QVBoxLayout
+from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QPushButton, QMessageBox, QGridLayout, QMainWindow, QStatusBar, QToolBar, QAction, QLineEdit, QComboBox, QHBoxLayout, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView
 from PyQt5.QtGui import QFont, QPixmap
 from PyQt5 import QtCore
 import datetime
@@ -32,6 +32,9 @@ class MainWindow(QMainWindow):
 		#inicializamos la lista de tareas para mañana 
 		self.__listTommorowsTasks: List[Alert] = []
 
+		#inicializamos la lista de tareas de hoy
+		self.__listTodaysSchedule: List[Alert] = self.__listTommorowsTasks
+
 	def __createMenu(self) -> NoReturn:
 		self.menu = self.menuBar().addMenu("&Menu")
 		self.menu.addAction('&Exit', self.close)
@@ -55,6 +58,8 @@ class MainWindow(QMainWindow):
 		#añadimos boton para planear su siguente dia
 		tools.addAction('Plan for Tommorow', lambda: self.__change_to_plan_tommorow_screen(False))
 
+		#añadimos boton para ir a ajustes
+		tools.addAction('Settings', lambda: self.__change_to_settings_screen())
 
 		#añadimos boton para salirse de la app
 		tools.addAction('Exit', self.close)
@@ -74,15 +79,18 @@ class MainWindow(QMainWindow):
 		self.setCentralWidget(bgImage)
 
 
-		#cambiamos el color de la barra a plata
-		self.statusBar().setStyleSheet('background-color : silver')
+		#cambiamos el estado del programa, ahora estamos en la ventana de añadir alerta
+		self.statusBar().showMessage('Current Status: Home Page')
+		self.setWindowTitle('AT-Calendar')
+		#cambiamos el color de la barra
+		self.statusBar().setStyleSheet('background-color : gainsboro')
 
 	def __change_to_alert_screen(self) -> NoReturn:
 		#cambiamos el estado del programa, ahora estamos en la ventana de añadir alerta
 		self.statusBar().showMessage('Current Status: Adding Alert')
 		self.setWindowTitle('Add Alert')
 		#cambiamos el color de la barra a rosa
-		self.statusBar().setStyleSheet('background-color : pink')
+		self.statusBar().setStyleSheet('background-color : gainsboro')
 	
 		layout = QVBoxLayout()
 
@@ -174,7 +182,7 @@ class MainWindow(QMainWindow):
 
 		addAlertButton = QPushButton()
 		addAlertButton.setText('Add Alert')
-		addAlertButton.setStyleSheet('background-color : lime; font-weight : bold')
+		addAlertButton.setStyleSheet('background-color : lawngreen; font-weight : bold')
 		addAlertButton.setMaximumWidth(150)
 		addAlertButton.setMaximumHeight(50)
 		sublayout4.addWidget(addAlertButton)
@@ -272,13 +280,13 @@ class MainWindow(QMainWindow):
 
 	def __change_to_alert_added_screen(self) -> NoReturn:
 		self.statusBar().showMessage('Current Status: Alert Added')
-		self.statusBar().setStyleSheet('background-color : lightgray')	
+		self.statusBar().setStyleSheet('background-color : gainsboro')	
 
 		greenscreen = QLabel()
 		greenscreen.setAlignment(QtCore.Qt.AlignCenter)
-		greenscreen.setStyleSheet('background-color : green; border : 50px solid lime; color : lightgray')
+		greenscreen.setStyleSheet('background-color : springgreen; color : whitesmoke')
 		greenscreen.setText('ALERT ADDED!')
-		greenscreen.setFont(QFont('Garamond', 60, QFont.Bold))
+		greenscreen.setFont(QFont('Garamond', 50, QFont.Bold))
 
 		#desplegamos la pantalla
 		self.setCentralWidget(greenscreen)
@@ -288,7 +296,7 @@ class MainWindow(QMainWindow):
 		self.statusBar().showMessage('Current Status: Planning Tommorow´s Day')
 		self.setWindowTitle('Plan for Tommorow')
 		#cambiamos el color de la barra a rosa
-		self.statusBar().setStyleSheet('background-color : gold')
+		self.statusBar().setStyleSheet('background-color : gainsboro')
 
 		#diferenciamos entre cuando simplemente querenos actualizar la pantalla o cuando se inicia desde otra
 		if not update:
@@ -309,6 +317,7 @@ class MainWindow(QMainWindow):
 			if type(self.__listHours[i]) == QLineEdit:
 				self.__listHours[i].setMaxLength(2)
 				self.__listMinutes[i].setMaxLength(2)
+				self.__listTaskDescription[i].setMaxLength(40)
 
 			layout.addWidget(self.__listHours[i], i + 1, 0)
 
@@ -320,7 +329,7 @@ class MainWindow(QMainWindow):
 			layout.addWidget(self.__listTaskDescription[i], i + 1, 3)
 
 		deleteTaskButton: QPushButton = QPushButton('Delete Task')
-		deleteTaskButton.setStyleSheet('background-color : red')
+		deleteTaskButton.setStyleSheet('background-color : tomato')
 		layout.addWidget(deleteTaskButton, len(self.__listHours) + 1, 0)
 		#si presiona el boton borramos la ultima casilla puesta
 		deleteTaskButton.clicked.connect(lambda: self.__deleteTask())
@@ -331,7 +340,7 @@ class MainWindow(QMainWindow):
 		addTaskButton.clicked.connect(lambda: self.__addTask())
 
 		saveTasksButton: QPushButton = QPushButton('Save Tasks')
-		saveTasksButton.setStyleSheet('background-color : darkturquoise')
+		saveTasksButton.setStyleSheet('background-color : lawngreen')
 		layout.addWidget(saveTasksButton, len(self.__listHours) + 1, 3)
 		#si presiona el boton se guardan las tareas para el siguente dia 
 		saveTasksButton.clicked.connect(lambda: self.__saveTasks())
@@ -437,8 +446,9 @@ class MainWindow(QMainWindow):
 			for i in range(len(self.__listHours)):
 				if type(self.__listHours[i]) == QLineEdit:
 					#creamos la tarea y lo añadimos a nuestra lista de tareas para mañana
-					task: Alert = Alert(Message(self.__listTaskDescription[i].text(), ''), Date(tommorow.day, tommorow.month, tommorow.year), time, AlertType(''))
+					task: Alert = Alert(Message(self.__listTaskDescription[i].text(), ''), Date(tommorow.day, tommorow.month, tommorow.year), Time(int(self.__listHours[i].text()), int(self.__listMinutes[i].text())), AlertType(''))
 					self.__listTommorowsTasks += [task]
+
 
 			self.__change_to_saved_tommorows_tasks_screen()
 
@@ -449,17 +459,82 @@ class MainWindow(QMainWindow):
 
 		purplescreen = QLabel()
 		purplescreen.setAlignment(QtCore.Qt.AlignCenter)
-		purplescreen.setStyleSheet('background-color : darkviolet; border : 50px solid mediumpurple; color : lightgray')
+		purplescreen.setStyleSheet('background-color : mediumpurple; color : lightgray')
 		purplescreen.setText('TOMMOROW´S' + '\n' + 'TASKS SAVED!')
-		purplescreen.setFont(QFont('Garamond', 60, QFont.Bold))
+		purplescreen.setFont(QFont('Garamond', 50, QFont.Bold))
 
 		#desplegamos la pantalla
 		self.setCentralWidget(purplescreen)
 
 	def __change_to_todays_schedule_screen(self) -> NoReturn:
-		print()	
+		#cambiamos el estado del programa, ahora estamos en la ventana de añadir alerta
+		self.statusBar().showMessage('Current Status: Checking Today´s Schedule')
+		self.setWindowTitle('Today´s Schedule')
+
+		#si no hay tareas para hoy saltara una pantalla diciendo que no hay planes para hoy
+		if len(self.__listTodaysSchedule) == 0:
+			noSchedule = QLabel()
+			noSchedule.setAlignment(QtCore.Qt.AlignCenter)
+			noSchedule.setStyleSheet('background-color : indianred; color : whitesmoke')
+			noSchedule.setText('NO PLANS TODAY')
+			noSchedule.setFont(QFont('Garamond', 50, QFont.Bold))
+
+			#cambiamos el color de la barra a rosa
+			self.statusBar().setStyleSheet('background-color : gainsboro')
+
+			self.setCentralWidget(noSchedule)
+		#en caso contrario pondremos una tabla con las tareas del dia
+		else:
+			#inicializamos el layout, como se van a distribuir los objetos
+			layout = QVBoxLayout()
+
+			#ponemos el titulo
+			title = QLabel('Schedule:')
+			title.setStyleSheet('font-size : 50px; font-weight : bold')
+			layout.addWidget(title)
+
+			#creamos la tabla y definimos su tamaño
+			tableSchedule = QTableWidget()
+			tableSchedule.setRowCount(len(self.__listTodaysSchedule))
+			tableSchedule.setColumnCount(2)
+
+			#ordenamos las tareas antes de ponerlo en la tabla
+			self.__listTodaysSchedule.sort()
+			for i in range(len(self.__listTodaysSchedule)):
+				tableSchedule.setItem(i, 0, QTableWidgetItem(str(self.__listTodaysSchedule[i].time)))
+				tableSchedule.setItem(i, 1, QTableWidgetItem(self.__listTodaysSchedule[i].message.title))
+
+			#ponemos el titulo de las columnas
+			tableSchedule.setHorizontalHeaderLabels(['Time', 'Task Description'])
+
+			#hacemos que la tabla se extiedna para todo el ancho de la pantalla
+			tableSchedule.horizontalHeader().setStretchLastSection(True)
+			tableSchedule.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)	
+
+			#modificamos el esstilo
+			tableSchedule.setStyleSheet('background-color : whitesmoke')
+
+
+			layout.addWidget(tableSchedule)		
+
+
+			#cambiamos el color de la barra a rosa
+			self.statusBar().setStyleSheet('background-color : gainsboro')
+
+
+			centralWidget = QWidget()
+			centralWidget.setLayout(layout)
+			centralWidget.setStyleSheet('background-color :  salmon')
+			self.setCentralWidget(centralWidget)
+
+
+
+
 
 	def __change_to_alert_calendar_screen(self) -> NoReturn:
+		print()	
+
+	def __change_to_settings_screen(self) -> NoReturn:
 		print()	
 
 	def __add_elements_comboBox(self, comboBox: QComboBox, listElements: List[T]) -> NoReturn:
