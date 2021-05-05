@@ -9,6 +9,9 @@ from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QPushButton, QMessage
 from PyQt5.QtGui import QFont, QPixmap
 from PyQt5 import QtCore
 import datetime
+import pickle
+from threading import *
+import time
 
 T = TypeVar('T')
 
@@ -26,14 +29,94 @@ class MainWindow(QMainWindow):
 		#cambiamos a la pagina de inicio
 		self.__change_to_home_screen()
 
+		#recogemos la informacion de la app
+		self.__restoreInfo()
+
+		print(self.__listTodaysSchedule)
+		print(self.__listTommorowsTasks)
+		print(self.__listAlerts)
+
+		#establecemos la aplicacion como abiertas
+		self.__open: bool = True
+		#inciamos un thread separado para ejecutar el checkeo de las alertas. Asi no se congela el programa y se ejecutan a la vez
+		t1 = Thread(target = self.__checkAlerts)
+		t1.start()
+
+	def __checkAlerts(self) -> NoReturn:
+		while self.__open == True:
+			#primero comprobamos que la lista de tommorow no tiene la fecha de hoy, si es el caso, ponemos la lista de hoy como la de mañana y vaciamos la de mañana
+			#si la fecha de tommorow es anterior a la de hoy vaciamos las dos listas
+			if len(self.__listTodaysSchedule) != 0:
+				if str(self.__listTodaysSchedule[0].date) != str(datetime.date.today()):
+					self.__listTodaysSchedule = []
+			if len(self.__listTommorowsTasks) != 0:
+				if str(self.__listTommorowsTasks[0].date) == str(datetime.date.today()):
+					self.__listTodaysSchedule = self.__listTommorowsTasks
+					self.__listTommorowsTasks = []
+				elif str(self.__listTommorowsTasks[0].date) == str(datetime.date.today() + datetime.timedelta(days = 1)):
+					None	
+				else:
+					self.__listTommorowsTasks = []
+
+			#despues, vemos si alguna alerta es de fecha anterior a la de hoy, si lo es lo borramos, por otro lado , si es de hoy, la añadimos a nuestro schedule y borramos. finalemente, si es de mañana mandamos pushbullet y añadimos a listtommorow
+			#creamos una instancia de date para poder compararlo
+			todayDate: Date = Date(datetime.date.today().month, datetime.date.today().day, datetime.date.today().year)
+			for alert in self.__listAlerts:
+				if str(alert.date) == str(datetime.date.today()):
+					#lo añadimos a nuestra lista de hoy y volvenos a ordernarla
+					self.__listTodaysSchedule += [alert]
+					self.__listTodaysSchedule.sort()
+					#lo borramos de la lista de alertas
+					self.__listAlerts.remove(alert)
+				elif str(alert.date) == str(datetime.date.today() + datetime.timedelta(days = 1)):
+					#lo añadimos a nuestra lista para mañana y volvemos a ordernarla
+					self.__listTommorowsTasks += [alert]
+					self.__listTommorowsTasks.sort()
+					#mandamos la notificacion pushbullet
+					#####################
+					#####################
+					#####################
+					#lo borramos de las alertas
+					self.__listAlerts.remove(alert)
+				elif alert.date < todayDate:
+					#lo borramos de la lista
+					self.__listAlerts.remove(alert)
+
+
+			#lo ultimo es checkear si alguna de las tareas del dia se tiene que realizar en los proximos 10 min, si es asi, mandara pushbullet
+			#for task in self.__listTodaysSchedule:
+
+			
+
+
+			#dormimos el progama otros 5 min	
+			time.sleep(5)
+
+	def __restoreInfo(self) -> NoReturn:
+		#abrimos el archivo y recuperamos la info
+		listInfo = []
+		with open('taskInfo.pkl', 'rb') as input:
+			listInfo = pickle.load(input)
+
 		#inicializamos la lista de alertas
-		self.__listAlerts: List[Alert] = []
-
+		self.__listAlerts: List[Alert] = listInfo[0]
 		#inicializamos la lista de tareas para mañana 
-		self.__listTommorowsTasks: List[Alert] = []
-
+		self.__listTommorowsTasks: List[Alert] = listInfo[1]
 		#inicializamos la lista de tareas de hoy
-		self.__listTodaysSchedule: List[Alert] = self.__listTommorowsTasks
+		self.__listTodaysSchedule: List[Alert] = listInfo[2]
+
+
+	def closeEvent(self, event):
+		#primero cerramos el thread del check alerts
+		self.__open = False
+
+		#cuando se cierra la pantalla vamos a guardar toda la informacion de las tareas
+		listInfo = [self.__listAlerts, self.__listTommorowsTasks, self.__listTodaysSchedule]
+
+		#abrimos el archivo de pickle y guardamos la informacion alli
+		with open('taskInfo.pkl', 'wb') as output:
+			pickle.dump(listInfo, output, pickle.HIGHEST_PROTOCOL)
+
 
 	def __createMenu(self) -> NoReturn:
 		self.menu = self.menuBar().addMenu("&Menu")
@@ -475,7 +558,7 @@ class MainWindow(QMainWindow):
 		if len(self.__listTodaysSchedule) == 0:
 			noSchedule = QLabel()
 			noSchedule.setAlignment(QtCore.Qt.AlignCenter)
-			noSchedule.setStyleSheet('background-color : indianred; color : whitesmoke')
+			noSchedule.setStyleSheet('background-color : indianred; color : gainsboro')
 			noSchedule.setText('NO PLANS TODAY')
 			noSchedule.setFont(QFont('Garamond', 50, QFont.Bold))
 
