@@ -59,14 +59,14 @@ class Date():
 	def __str__(self):
 		if self.__month < 10:
 			if self.__day < 10:
-				return f'0{self.__day}/0{self.__month}/{self.__year}'
+				return f'{self.__year}-0{self.__month}-0{self.__day}'
 			else:
-				return f'{self.__day}/0{self.__month}/{self.__year}'	
+				return f'{self.__year}-0{self.__month}-{self.__day}'	
 		else:
 			if self.__day < 10:
-				return f'0{self.__day}/{self.__month}/{self.__year}'
+				return f'{self.__year}-{self.__month}-0{self.__day}'
 			else:
-				return f'{self.__day}/{self.__month}/{self.__year}'
+				return f'{self.__year}-{self.__month}-{self.__day}'
 
 	def __eq__(self, other):
 		return self.__day == other.day and self.__month == other.month and self.__year == other.year			

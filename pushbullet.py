@@ -20,7 +20,7 @@ def send_notification_via_pushbullet(title, body):
 
     if resp.status_code != 200:
         raise Exception('Something wrong')
-    else:
-        print(resp.text)
+    #else:
+        #print(resp.text)
 
 

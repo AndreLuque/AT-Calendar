@@ -12,6 +12,7 @@ import datetime
 import pickle
 from threading import *
 import time
+from pushbullet import *
 
 T = TypeVar('T')
 
@@ -32,15 +33,15 @@ class MainWindow(QMainWindow):
 		#recogemos la informacion de la app
 		self.__restoreInfo()
 
-		print(self.__listTodaysSchedule)
-		print(self.__listTommorowsTasks)
-		print(self.__listAlerts)
-
 		#establecemos la aplicacion como abiertas
 		self.__open: bool = True
 		#inciamos un thread separado para ejecutar el checkeo de las alertas. Asi no se congela el programa y se ejecutan a la vez
 		t1 = Thread(target = self.__checkAlerts)
 		t1.start()
+
+		#print(self.__listTodaysSchedule)
+		#print(self.__listTommorowsTasks)
+		#print(self.__listAlerts)
 
 	def __checkAlerts(self) -> NoReturn:
 		while self.__open == True:
@@ -60,7 +61,7 @@ class MainWindow(QMainWindow):
 
 			#despues, vemos si alguna alerta es de fecha anterior a la de hoy, si lo es lo borramos, por otro lado , si es de hoy, la añadimos a nuestro schedule y borramos. finalemente, si es de mañana mandamos pushbullet y añadimos a listtommorow
 			#creamos una instancia de date para poder compararlo
-			todayDate: Date = Date(datetime.date.today().month, datetime.date.today().day, datetime.date.today().year)
+			todayDate: Date = Date(datetime.date.today().day, datetime.date.today().month, datetime.date.today().year)
 			for alert in self.__listAlerts:
 				if str(alert.date) == str(datetime.date.today()):
 					#lo añadimos a nuestra lista de hoy y volvenos a ordernarla
@@ -73,9 +74,7 @@ class MainWindow(QMainWindow):
 					self.__listTommorowsTasks += [alert]
 					self.__listTommorowsTasks.sort()
 					#mandamos la notificacion pushbullet
-					#####################
-					#####################
-					#####################
+					send_notification_via_pushbullet(alert.message.title, str(alert.date) + '\n' + str(alert.time) + '\n' + alert.message.body)
 					#lo borramos de las alertas
 					self.__listAlerts.remove(alert)
 				elif alert.date < todayDate:
@@ -84,10 +83,13 @@ class MainWindow(QMainWindow):
 
 
 			#lo ultimo es checkear si alguna de las tareas del dia se tiene que realizar en los proximos 10 min, si es asi, mandara pushbullet
-			#for task in self.__listTodaysSchedule:
-
-			
-
+			t = time.localtime()
+			current_hour = time.strftime("%H", t)
+			current_minute = time.strftime("%M", t)
+			current_time: Time = Time(int(current_hour), int(current_minute))
+			for task in self.__listTodaysSchedule:
+				if current_time == task.time:
+					send_notification_via_pushbullet(task.message.title, str(task.date) + '\n' + str(task.time) + '\n' + task.message.body)
 
 			#dormimos el progama otros 5 min	
 			time.sleep(5)
@@ -357,7 +359,6 @@ class MainWindow(QMainWindow):
 				#creamos la alerta y lo añadimos a nuestra lista de alertas que almacenaremos
 				alert: Alert = Alert(message, date, time, alertType)
 				self.__listAlerts += [alert]
-
 				#desplegamos una pantalla en verde 
 				self.__change_to_alert_added_screen()
 
