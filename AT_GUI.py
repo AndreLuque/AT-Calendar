@@ -92,7 +92,7 @@ class MainWindow(QMainWindow):
 					send_notification_via_pushbullet(task.message.title, str(task.date) + '\n' + str(task.time) + '\n' + task.message.body)
 
 			#dormimos el progama otros 5 min	
-			time.sleep(5)
+			time.sleep(59)
 
 	def __restoreInfo(self) -> NoReturn:
 		#abrimos el archivo y recuperamos la info
