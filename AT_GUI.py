@@ -162,37 +162,43 @@ class MainWindow(QMainWindow):
 		self.setStatusBar(status)
 
 	def __change_to_home_screen(self) -> NoReturn:
+		#si el usuario todavia no ha introducido su email, iremos a la pantalla de login
 		if not self.__loggedin:
+			#como se distrubuiran los widgets
 			layout = QVBoxLayout()
 			
+			#ponemos el titulo de la pantalla y ajustamos su formato
 			title = QLabel('LOGIN')
 			title.setAlignment(QtCore.Qt.AlignCenter)
 			title.setStyleSheet('color : white; font-size : 100px; font-weight : bold')
 			layout.addWidget(title)
 
+			#organizamos un trozo de info en horizontal
 			sublayout = QHBoxLayout()
 			
+			#dejamos un hueco para introducir el email
 			self.__enterEmail = QLineEdit(placeholderText = 'Enter Pushbullet Email')
 			self.__enterEmail.setStyleSheet('background-color : darkgray; border : 3px solid white')
 			sublayout.addWidget(self.__enterEmail)
 
+			#boton para confirmar el email
 			login = QPushButton('START')
 			login.setStyleSheet('background-color : white')
 			sublayout.addWidget(login)
 
 			layout.addLayout(sublayout)
-			layout.addWidget(QWidget())
+			layout.addWidget(QWidget()) #añadimos este widget de relleno, para que los demas esten bien distribuidos de espacio
 
-
-
+			#lo denominamos nuestro central widget
 			centralWidget = QWidget()
 			centralWidget.setLayout(layout)
 			centralWidget.setStyleSheet('background-color : black')
 			self.setCentralWidget(centralWidget)
 
+			#cuando el boton sea pulsado de conectara a esta funcion
 			login.clicked.connect(lambda: self.__login())
 
-
+		#en caso de que ya esta logeado, si entrara directamente
 		else:
 			#cargando e insertando la imagen de fondo
 			bgImage = QLabel() 
@@ -210,7 +216,9 @@ class MainWindow(QMainWindow):
 			self.statusBar().setStyleSheet('background-color : gainsboro')
 
 	def __login(self):
+		#el email sera el texto que haya en el hueco
 		email:str = self.__enterEmail.text()
+		#probamos mandar la notificacion de confirmacion con pushbullet, en caso afirmativo, se ira a la pagina principal creando al menu y ststaus 
 		try:
 			send_notification_via_pushbullet('Pushbullet LOGIN CONFIRMED', '', email)
 			self.__email = email
@@ -219,12 +227,11 @@ class MainWindow(QMainWindow):
 			self.__createToolBar()
 			self.__createStatusBar()
 			self.__change_to_home_screen()
+		#en caso contrario se mostrara al usuario que el email es incorrecto	
 		except:
 			self.__enterEmail.setText('')
 			self.__enterEmail.setPlaceholderText('!!INCORRECT EMAIL!!')
 			self.__enterEmail.setStyleSheet('background-color : darkgray; border : 3px solid red')
-			
-
 
 	def __change_to_alert_screen(self) -> NoReturn:
 		#cambiamos el estado del programa, ahora estamos en la ventana de añadir alerta
