@@ -27,11 +27,11 @@ class MainWindow(QMainWindow):
 		self.__createToolBar()
 		self.__createStatusBar()
 
-		#cambiamos a la pagina de inicio
-		self.__change_to_home_screen()
-
 		#recogemos la informacion de la app
 		self.__restoreInfo()
+
+		#cambiamos a la pagina de inicio
+		self.__change_to_home_screen()
 
 		#establecemos la aplicacion como abiertas
 		self.__open: bool = True
@@ -106,6 +106,10 @@ class MainWindow(QMainWindow):
 		self.__listTommorowsTasks: List[Alert] = listInfo[1]
 		#inicializamos la lista de tareas de hoy
 		self.__listTodaysSchedule: List[Alert] = listInfo[2]
+		#cogemos el email guardado
+		self.__email: str = listInfo[3]
+		#cogemos el booleano que nos indica si un email ya ha sido introducido
+		self.__loggedin: bool = listInfo[4]
 
 
 	def closeEvent(self, event):
@@ -113,7 +117,7 @@ class MainWindow(QMainWindow):
 		self.__open = False
 
 		#cuando se cierra la pantalla vamos a guardar toda la informacion de las tareas
-		listInfo = [self.__listAlerts, self.__listTommorowsTasks, self.__listTodaysSchedule]
+		listInfo = [self.__listAlerts, self.__listTommorowsTasks, self.__listTodaysSchedule, self.__email, self.__loggedin]
 
 		#abrimos el archivo de pickle y guardamos la informacion alli
 		with open('taskInfo.pkl', 'wb') as output:
