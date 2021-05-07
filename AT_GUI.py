@@ -24,14 +24,17 @@ class MainWindow(QMainWindow):
 		self.setWindowTitle('AT-Calendar')
 		#self.setCentralWidget(QLabel('YAAAY'))
 		#self.__createMenu()
-		self.__createToolBar()
-		self.__createStatusBar()
 
 		#recogemos la informacion de la app
 		self.__restoreInfo()
 
 		#cambiamos a la pagina de inicio
 		self.__change_to_home_screen()
+
+		if self.__loggedin:
+			#creamos la barra de estados y el menu
+			self.__createToolBar()
+			self.__createStatusBar()
 
 		#establecemos la aplicacion como abiertas
 		self.__open: bool = True
@@ -92,7 +95,7 @@ class MainWindow(QMainWindow):
 					send_notification_via_pushbullet(task.message.title, str(task.date) + '\n' + str(task.time) + '\n' + task.message.body)
 
 			#dormimos el progama otros 5 min	
-			time.sleep(59)
+			time.sleep(5)
 
 	def __restoreInfo(self) -> NoReturn:
 		#abrimos el archivo y recuperamos la info
@@ -159,20 +162,69 @@ class MainWindow(QMainWindow):
 		self.setStatusBar(status)
 
 	def __change_to_home_screen(self) -> NoReturn:
-		#cargando e insertando la imagen de fondo
-		bgImage = QLabel() 
-		bgImage.setText('      AT' + '\n' + ' Calendar')
-		bgImage.setStyleSheet('background-image : url(bg.png)')
-		bgImage.setFont(QFont('Garamond', 40, QFont.Bold))
+		if not self.__loggedin:
+			layout = QVBoxLayout()
+			
+			title = QLabel('LOGIN')
+			title.setAlignment(QtCore.Qt.AlignCenter)
+			title.setStyleSheet('color : white; font-size : 100px; font-weight : bold')
+			layout.addWidget(title)
 
-		self.setCentralWidget(bgImage)
+			sublayout = QHBoxLayout()
+			
+			self.__enterEmail = QLineEdit(placeholderText = 'Enter Pushbullet Email')
+			self.__enterEmail.setStyleSheet('background-color : darkgray; border : 3px solid white')
+			sublayout.addWidget(self.__enterEmail)
+
+			login = QPushButton('START')
+			login.setStyleSheet('background-color : white')
+			sublayout.addWidget(login)
+
+			layout.addLayout(sublayout)
+			layout.addWidget(QWidget())
 
 
-		#cambiamos el estado del programa, ahora estamos en la ventana de añadir alerta
-		self.statusBar().showMessage('Current Status: Home Page')
-		self.setWindowTitle('AT-Calendar')
-		#cambiamos el color de la barra
-		self.statusBar().setStyleSheet('background-color : gainsboro')
+
+			centralWidget = QWidget()
+			centralWidget.setLayout(layout)
+			centralWidget.setStyleSheet('background-color : black')
+			self.setCentralWidget(centralWidget)
+
+			login.clicked.connect(lambda: self.__login())
+
+
+		else:
+			#cargando e insertando la imagen de fondo
+			bgImage = QLabel() 
+			bgImage.setText('      AT' + '\n' + ' Calendar')
+			bgImage.setStyleSheet('background-image : url(bg.png)')
+			bgImage.setFont(QFont('Garamond', 40, QFont.Bold))
+
+			self.setCentralWidget(bgImage)
+
+
+			#cambiamos el estado del programa, ahora estamos en la ventana de añadir alerta
+			self.statusBar().showMessage('Current Status: Home Page')
+			self.setWindowTitle('AT-Calendar')
+			#cambiamos el color de la barra
+			self.statusBar().setStyleSheet('background-color : gainsboro')
+
+	def __login(self):
+		email:str = self.__enterEmail.text()
+		try:
+			send_notification_via_pushbullet('Pushbullet LOGIN CONFIRMED', '', email)
+			self.__email = email
+			self.__loggedin = True
+			#creamos la barra de estados y el menu
+			self.__createToolBar()
+			self.__createStatusBar()
+			self.__change_to_home_screen()
+		except:
+			self.__enterEmail.setText('')
+			self.__enterEmail.setPlaceholderText('!!INCORRECT EMAIL!!')
+			self.__enterEmail.setStyleSheet('background-color : darkgray; border : 3px solid red')
+			
+
 
 	def __change_to_alert_screen(self) -> NoReturn:
 		#cambiamos el estado del programa, ahora estamos en la ventana de añadir alerta
