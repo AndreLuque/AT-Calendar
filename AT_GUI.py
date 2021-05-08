@@ -31,10 +31,8 @@ class MainWindow(QMainWindow):
 		#cambiamos a la pagina de inicio
 		self.__change_to_home_screen()
 
-		if self.__loggedin:
-			#creamos la barra de estados y el menu
-			self.__createToolBar()
-			self.__createStatusBar()
+		#para ver si es la primera vez que entramos en la app
+		self.__first: bool = True
 
 		#establecemos la aplicacion como abiertas
 		self.__open: bool = True
@@ -119,6 +117,7 @@ class MainWindow(QMainWindow):
 		#primero cerramos el thread del check alerts
 		self.__open = False
 
+		self.__loggedin = False
 		#cuando se cierra la pantalla vamos a guardar toda la informacion de las tareas
 		listInfo = [self.__listAlerts, self.__listTommorowsTasks, self.__listTodaysSchedule, self.__email, self.__loggedin]
 
@@ -151,7 +150,7 @@ class MainWindow(QMainWindow):
 		tools.addAction('Plan for Tommorow', lambda: self.__change_to_plan_tommorow_screen(False))
 
 		#añadimos boton para ir a ajustes
-		tools.addAction('Settings', lambda: self.__change_to_settings_screen())
+		tools.addAction('Switch Account', lambda: self.__change_to_settings_screen())
 
 		#añadimos boton para salirse de la app
 		tools.addAction('Exit', self.close)
@@ -215,7 +214,7 @@ class MainWindow(QMainWindow):
 			#cambiamos el color de la barra
 			self.statusBar().setStyleSheet('background-color : gainsboro')
 
-	def __login(self):
+	def __login(self) -> NoReturn:
 		#el email sera el texto que haya en el hueco
 		email:str = self.__enterEmail.text()
 		#probamos mandar la notificacion de confirmacion con pushbullet, en caso afirmativo, se ira a la pagina principal creando al menu y ststaus 
@@ -224,8 +223,9 @@ class MainWindow(QMainWindow):
 			self.__email = email
 			self.__loggedin = True
 			#creamos la barra de estados y el menu
-			self.__createToolBar()
-			self.__createStatusBar()
+			if self.__first:
+				self.__createToolBar()
+				self.__createStatusBar()
 			self.__change_to_home_screen()
 		#en caso contrario se mostrara al usuario que el email es incorrecto	
 		except:
@@ -682,7 +682,12 @@ class MainWindow(QMainWindow):
 		print()	
 
 	def __change_to_settings_screen(self) -> NoReturn:
-		print()	
+		#primero reiniciamos la variable de la cuenta
+		self.__loggedin = False
+		#cambiamos el first ya que no es la primera vez que logeamos
+		self.__first = False
+		#volvemos a la pantalla de inicio
+		self.__change_to_home_screen()	
 
 	def __add_elements_comboBox(self, comboBox: QComboBox, listElements: List[T]) -> NoReturn:
 		for element in listElements:
