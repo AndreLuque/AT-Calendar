@@ -1,0 +1,3 @@
+ To execute the program efficiently, I recommend setting up a virtual enviroment previously (https://uoa-eresearch.github.io/eresearch-cookbook/recipe/2014/11/26/python-virtual-env/)
+ To install all the dependencies/packages needed, just run 'pip install -r requirements.txt'
+ (requirements.txt contains all the packages used)
