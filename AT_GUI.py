@@ -46,54 +46,55 @@ class MainWindow(QMainWindow):
 
 	def __checkAlerts(self) -> NoReturn:
 		while self.__open == True:
-			#primero comprobamos que la lista de tommorow no tiene la fecha de hoy, si es el caso, ponemos la lista de hoy como la de mañana y vaciamos la de mañana
-			#si la fecha de tommorow es anterior a la de hoy vaciamos las dos listas
-			if len(self.__listTodaysSchedule) != 0:
-				if str(self.__listTodaysSchedule[0].date) != str(datetime.date.today()):
-					self.__listTodaysSchedule = []
-			if len(self.__listTommorowsTasks) != 0:
-				if str(self.__listTommorowsTasks[0].date) == str(datetime.date.today()):
-					self.__listTodaysSchedule = self.__listTommorowsTasks
-					self.__listTommorowsTasks = []
-				elif str(self.__listTommorowsTasks[0].date) == str(datetime.date.today() + datetime.timedelta(days = 1)):
-					None	
-				else:
-					self.__listTommorowsTasks = []
+			if self.__loggedin:
+				#primero comprobamos que la lista de tommorow no tiene la fecha de hoy, si es el caso, ponemos la lista de hoy como la de mañana y vaciamos la de mañana
+				#si la fecha de tommorow es anterior a la de hoy vaciamos las dos listas
+				if len(self.__listTodaysSchedule) != 0:
+					if str(self.__listTodaysSchedule[0].date) != str(datetime.date.today()):
+						self.__listTodaysSchedule = []
+				if len(self.__listTommorowsTasks) != 0:
+					if str(self.__listTommorowsTasks[0].date) == str(datetime.date.today()):
+						self.__listTodaysSchedule = self.__listTommorowsTasks
+						self.__listTommorowsTasks = []
+					elif str(self.__listTommorowsTasks[0].date) == str(datetime.date.today() + datetime.timedelta(days = 1)):
+						None	
+					else:
+						self.__listTommorowsTasks = []
 
-			#despues, vemos si alguna alerta es de fecha anterior a la de hoy, si lo es lo borramos, por otro lado , si es de hoy, la añadimos a nuestro schedule y borramos. finalemente, si es de mañana mandamos pushbullet y añadimos a listtommorow
-			#creamos una instancia de date para poder compararlo
-			todayDate: Date = Date(datetime.date.today().day, datetime.date.today().month, datetime.date.today().year)
-			for alert in self.__listAlerts:
-				if str(alert.date) == str(datetime.date.today()):
-					#lo añadimos a nuestra lista de hoy y volvenos a ordernarla
-					self.__listTodaysSchedule += [alert]
-					self.__listTodaysSchedule.sort()
-					#lo borramos de la lista de alertas
-					self.__listAlerts.remove(alert)
-				elif str(alert.date) == str(datetime.date.today() + datetime.timedelta(days = 1)):
-					#lo añadimos a nuestra lista para mañana y volvemos a ordernarla
-					self.__listTommorowsTasks += [alert]
-					self.__listTommorowsTasks.sort()
-					#mandamos la notificacion pushbullet
-					send_notification_via_pushbullet(alert.message.title, str(alert.date) + '\n' + str(alert.time) + '\n' + alert.message.body)
-					#lo borramos de las alertas
-					self.__listAlerts.remove(alert)
-				elif alert.date < todayDate:
-					#lo borramos de la lista
-					self.__listAlerts.remove(alert)
+				#despues, vemos si alguna alerta es de fecha anterior a la de hoy, si lo es lo borramos, por otro lado , si es de hoy, la añadimos a nuestro schedule y borramos. finalemente, si es de mañana mandamos pushbullet y añadimos a listtommorow
+				#creamos una instancia de date para poder compararlo
+				todayDate: Date = Date(datetime.date.today().day, datetime.date.today().month, datetime.date.today().year)
+				for alert in self.__listAlerts:
+					if str(alert.date) == str(datetime.date.today()):
+						#lo añadimos a nuestra lista de hoy y volvenos a ordernarla
+						self.__listTodaysSchedule += [alert]
+						self.__listTodaysSchedule.sort()
+						#lo borramos de la lista de alertas
+						self.__listAlerts.remove(alert)
+					elif str(alert.date) == str(datetime.date.today() + datetime.timedelta(days = 1)):
+						#lo añadimos a nuestra lista para mañana y volvemos a ordernarla
+						self.__listTommorowsTasks += [alert]
+						self.__listTommorowsTasks.sort()
+						#mandamos la notificacion pushbullet
+						send_notification_via_pushbullet(alert.message.title, str(alert.date) + '\n' + str(alert.time) + '\n' + alert.message.body, self.__email)
+						#lo borramos de las alertas
+						self.__listAlerts.remove(alert)
+					elif alert.date < todayDate:
+						#lo borramos de la lista
+						self.__listAlerts.remove(alert)
 
 
-			#lo ultimo es checkear si alguna de las tareas del dia se tiene que realizar en los proximos 10 min, si es asi, mandara pushbullet
-			t = time.localtime()
-			current_hour = time.strftime("%H", t)
-			current_minute = time.strftime("%M", t)
-			current_time: Time = Time(int(current_hour), int(current_minute))
-			for task in self.__listTodaysSchedule:
-				if current_time == task.time:
-					send_notification_via_pushbullet(task.message.title, str(task.date) + '\n' + str(task.time) + '\n' + task.message.body)
+				#lo ultimo es checkear si alguna de las tareas del dia se tiene que realizar en los proximos 10 min, si es asi, mandara pushbullet
+				t = time.localtime()
+				current_hour = time.strftime("%H", t)
+				current_minute = time.strftime("%M", t)
+				current_time: Time = Time(int(current_hour), int(current_minute))
+				for task in self.__listTodaysSchedule:
+					if current_time == task.time:
+						send_notification_via_pushbullet(task.message.title, str(task.date) + '\n' + str(task.time) + '\n' + task.message.body, self.__email)
 
 			#dormimos el progama otros 5 min	
-			time.sleep(5)
+			time.sleep(29)
 
 	def __restoreInfo(self) -> NoReturn:
 		#abrimos el archivo y recuperamos la info
@@ -219,6 +220,8 @@ class MainWindow(QMainWindow):
 		email:str = self.__enterEmail.text()
 		#probamos mandar la notificacion de confirmacion con pushbullet, en caso afirmativo, se ira a la pagina principal creando al menu y ststaus 
 		try:
+			if self.__email != email:
+				raise ValueError
 			send_notification_via_pushbullet('Pushbullet LOGIN CONFIRMED', '', email)
 			self.__email = email
 			self.__loggedin = True
