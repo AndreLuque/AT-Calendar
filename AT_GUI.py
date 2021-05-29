@@ -37,14 +37,14 @@ class MainWindow(QMainWindow):
 		#establecemos la aplicacion como abiertas
 		self.__open: bool = True
 		#inciamos un thread separado para ejecutar el checkeo de las alertas. Asi no se congela el programa y se ejecutan a la vez
-		t1 = Thread(target = self.__checkAlerts)
+		t1 = Thread(target = self.checkAlerts)
 		t1.start()
 
 		#print(self.__listTodaysSchedule)
 		#print(self.__listTommorowsTasks)
 		#print(self.__listAlerts)
 
-	def __checkAlerts(self) -> NoReturn:
+	def checkAlerts(self) -> NoReturn:
 		while self.__open == True:
 			if self.__loggedin:
 				#primero comprobamos que la lista de tommorow no tiene la fecha de hoy, si es el caso, ponemos la lista de hoy como la de mañana y vaciamos la de mañana
@@ -731,5 +731,8 @@ def main ():
 	window1.show() #por defecto se omiten los objetos, hay q poner el .show() para mostrarlo
 
 	app.exec() #debemos poner el .exec() para que el programa siga hasta que el usuario salga de la ventana 
+
+	while True:
+		window1.checkAlerts()
 
 if __name__ == '__main__': main()

@@ -4,13 +4,13 @@
 import requests
 import json
  
-def send_notification_via_pushbullet(title, body):
+def send_notification_via_pushbullet(title, body, email):
     """ Sending notification via pushbullet.
         Args:
             title (str) : title of text.
             body (str) : Body of text.
     """
-    data_send = {"type": "note", "title": title, "body": body, "email": "andre.luque.c@gmail.com"} #aqui especificamos la informacion que ira en el mensaje 
+    data_send = {"type": "note", "title": title, "body": body, "email": email} #aqui especificamos la informacion que ira en el mensaje 
     #https://docs.pushbullet.com/#list-pushes en esta pagina salen todos los parametros que puedes introducir
  
     ACCESS_TOKEN = 'o.KqZ4Geric6A6ybdlQtl0EGupexU4OUyA' #se necesita un token de accesso para acceder a la pagina y realizar un push
@@ -22,5 +22,7 @@ def send_notification_via_pushbullet(title, body):
         raise Exception('Something wrong')
     #else:
         #print(resp.text)
+
+
 
 
